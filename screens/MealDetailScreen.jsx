@@ -1,16 +1,31 @@
-import React, { useLayoutEffect } from "react";
+import React, {useContext, useLayoutEffect} from "react";
 import { View, Text, Image, StyleSheet, ScrollView } from "react-native";
 import { MEALS } from "../assets/data/dummy-data";
 import MealDetails from "../components/MealDetails";
 import Subtitle from "../components/MealDetail/Subtitle";
 import List from "../components/MealDetail/List";
 import IconButton from "../components/IconButton";
+import {FavoritesContext} from "../store/context/favorites-context";
+import {useDispatch, useSelector} from "react-redux";
+import {addFavorite, removeFavorite} from "../store/redux/favorites";
 
 const MealDetailScreen = ({ route, navigation }) => {
 	const mealId = route.params.mealId;
+	// const favoritesCtx = useContext(FavoritesContext)
+	const favoriteMealIds = useSelector((state) => state.favoriteMeals.ids)
+	const dispatch = useDispatch()
 
-	const headerButtonPressHandler = () => {
-		console.log("asdasd");
+	const selectedMeal = MEALS.find(meal => meal.id === mealId)
+	const mealIsFavorite = favoriteMealIds.includes(mealId)
+
+
+
+	const changeFavoritePressHandler = () => {
+		if (mealIsFavorite) {
+			dispatch(removeFavorite({id: mealId}))
+		} else {
+			dispatch(addFavorite({id: mealId}))
+		}
 	};
 
 	useLayoutEffect(() => {
@@ -18,16 +33,15 @@ const MealDetailScreen = ({ route, navigation }) => {
 			headerRight: () => {
 				return (
 					<IconButton
-						icon="star"
+						icon={mealIsFavorite ? "star" : "star-outline"}
 						color={"white"}
-						onPress={headerButtonPressHandler}
+						onPress={changeFavoritePressHandler}
 					/>
 				);
 			},
 		});
-	}, [navigation, headerButtonPressHandler]);
+	}, [navigation, changeFavoritePressHandler]);
 
-	const selectedMeal = MEALS.find((meal) => meal.id === mealId);
 	return (
 		<ScrollView style={styles.rootContainer}>
 			<Image style={styles.image} source={selectedMeal.imageUrl} />
@@ -69,7 +83,7 @@ const styles = StyleSheet.create({
 		color: "#333",
 	},
 	detailText: {
-		color: "black",
+		// color: "black",
 		color: "#333",
 	},
 	listOuterContainer: {
